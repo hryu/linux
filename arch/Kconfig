@@ -887,4 +887,19 @@ config STRICT_MODULE_RWX
 config ARCH_WANT_RELAX_ORDER
 	bool
 
+config HAVE_ARCH_RARE_WRITE
+	def_bool n
+	help
+	  An arch should select this option if it has defined the functions
+	  __arch_rare_write_map() and __arch_rare_write_unmap() to
+	  respectively enable and disable writing to read-only memory.The
+	  routines must meet the following requirements:
+	  - read-only memory writing must only be available on the current
+	    CPU (to make sure other CPUs can't race to make changes too).
+	  - the routines must be declared inline (to discourage ROP use).
+	  - the routines must not be preemptible (likely they will call
+	    preempt_disable() and preempt_enable_no_resched() respectively).
+	  - the routines must validate expected state (e.g. when enabling
+	    writes, BUG() if writes are already be enabled).
+
 source "kernel/gcov/Kconfig"

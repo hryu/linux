@@ -336,6 +336,44 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
 	__u.__val;					\
 })
 
+/*
+ * Build "write rarely" infrastructure for flipping memory r/w
+ * on a per-CPU basis.
+ */
+#ifndef CONFIG_HAVE_ARCH_RARE_WRITE
+# define __wr_rare
+# define __wr_rare_type
+# define __rare_write_type(v)	typeof(v)
+# define __rare_write_ptr(v)	(&(v))
+# define __rare_write(__var, __val)	({		\
+	__var = __val;					\
+	__var;						\
+})
+# define rare_write_enable()	do { } while (0)
+# define rare_write_disable()	do { } while (0)
+#else
+# define __wr_rare		__ro_after_init
+# define __wr_rare_type		const
+# define __rare_write_type(v)	typeof((typeof(v))0)
+# define __rare_write_ptr(v)	((__rare_write_type(v) *)&(v))
+# define __rare_write(__var, __val) ({			\
+	__rare_write_type(__var) *__rw_var;		\
+							\
+	__rw_var = __rare_write_ptr(__var);		\
+	*__rw_var = (__val);				\
+	__var;						\
+})
+# define rare_write_enable()	__arch_rare_write_map()
+# define rare_write_disable()	__arch_rare_write_unmap()
+#endif
+
+#define rare_write(__var, __val) ({			\
+	rare_write_enable();				\
+	__rare_write(__var, __val);			\
+	rare_write_disable();				\
+	__var;						\
+})
+
 #endif /* __KERNEL__ */
 
 #endif /* __ASSEMBLY__ */
