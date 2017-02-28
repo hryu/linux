@@ -355,7 +355,11 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
 # define __wr_rare		__ro_after_init
 # define __wr_rare_type		const
 # define __rare_write_type(v)	typeof((typeof(v))0)
-# define __rare_write_ptr(v)	((__rare_write_type(v) *)&(v))
+# ifndef CONFIG_HAVE_ARCH_RARE_WRITE_PTR
+#  define __rare_write_ptr(v)	((__rare_write_type(v) *)&(v))
+# else
+#  define __rare_write_ptr(v)	__arch_rare_write_ptr(v)
+# endif
 # define __rare_write(__var, __val) ({			\
 	__rare_write_type(__var) *__rw_var;		\
 							\

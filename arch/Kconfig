@@ -902,4 +902,8 @@ config HAVE_ARCH_RARE_WRITE
 	  - the routines must validate expected state (e.g. when enabling
 	    writes, BUG() if writes are already be enabled).
 
+config HAVE_ARCH_RARE_WRITE_PTR
+	def_bool n
+	help
+
 source "kernel/gcov/Kconfig"
