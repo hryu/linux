@@ -19,6 +19,13 @@ struct notifier_block;		/* in notifier.h */
 #define VM_UNINITIALIZED	0x00000020	/* vm_struct is not fully initialized */
 #define VM_NO_GUARD		0x00000040      /* don't add guard page */
 #define VM_KASAN		0x00000080      /* has allocated kasan shadow memory */
+/*
+ * static area, vmap_area will never go away.
+ * This flag is OR-ed automatically in vmalloc_init() if the area is inserted
+ * by vm_area_add_early()/vm_area_register_early() during early boot process
+ * or you can give this flag manually using other vmalloc APIs.
+ */
+#define VM_STATIC		0x00000200
 /* bits [20..32] reserved for arch specific ioremap internals */
 
 /*
