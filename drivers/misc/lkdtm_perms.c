@@ -20,11 +20,14 @@
 /* This is non-const, so it will end up in the .data section. */
 static u8 data_area[EXEC_SIZE];
 
-/* This is cost, so it will end up in the .rodata section. */
+/* This is const, so it will end up in the .rodata section. */
 static const unsigned long rodata = 0xAA55AA55;
 
 /* This is marked __ro_after_init, so it should ultimately be .rodata. */
 static unsigned long ro_after_init __ro_after_init = 0x55AA5500;
+
+/* This is marked __wr_rare, so it should ultimately be .rodata. */
+static unsigned long wr_rare __wr_rare = 0xAA66AA66;
 
 /*
  * This just returns to the caller. It is designed to be copied into
@@ -101,6 +104,20 @@ void lkdtm_WRITE_RO_AFTER_INIT(void)
 
 	pr_info("attempting bad ro_after_init write at %p\n", ptr);
 	*ptr ^= 0xabcd1234;
+}
+
+void lkdtm_WRITE_RARE_WRITE(void)
+{
+	/* Explicitly cast away "const" for the test. */
+	unsigned long *ptr = (unsigned long *)&wr_rare;
+
+	pr_info("attempting good rare write at %p\n", ptr);
+	rare_write(*ptr, 0x11335577);
+	if (wr_rare != 0x11335577)
+		pr_warn("Yikes: wr_rare did not actually change!\n");
+
+	pr_info("attempting bad rare write at %p\n", ptr);
+	*ptr ^= 0xbcd12345;
 }
 
 void lkdtm_WRITE_KERN(void)
